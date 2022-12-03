@@ -1,5 +1,5 @@
 fun main() {
-    fun List<String>.elfInventories(): List<List<Int>> {
+    fun List<String>.parseInput(): List<List<Int>> {
         var rest = this
         return buildList {
             while (rest.isNotEmpty()) {
@@ -25,13 +25,11 @@ fun main() {
     }
 
     // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day01_test")
-    val testInputElfInventories = testInput.elfInventories()
-    check(part1(testInputElfInventories) == 24000)
-    check(part2(testInputElfInventories) == 45000)
+    val testInput = readInput("Day01_test").parseInput()
+    check(part1(testInput) == 24000)
+    check(part2(testInput) == 45000)
 
-    val input = readInput("Day01")
-    val inputElfInventories = input.elfInventories()
-    println(part1(inputElfInventories))
-    println(part2(inputElfInventories))
+    val input = readInput("Day01").parseInput()
+    println(part1(input))
+    println(part2(input))
 }
