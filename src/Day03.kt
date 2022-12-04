@@ -7,20 +7,20 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         return input.sumOf { rucksack ->
-            val secondCompartmentIndex = rucksack.length / 2
-            val first = rucksack.substring(0, secondCompartmentIndex).toSet()
-            val second = rucksack.substring(secondCompartmentIndex).toSet()
-            first.intersect(second)
-                .sumOf { calculatePriority(it) }
+            val secondCompIndex = rucksack.length / 2
+            val firstComp = rucksack.substring(0, secondCompIndex).toSet()
+            val secondComp = rucksack.substring(secondCompIndex).toSet()
+            firstComp.intersect(secondComp)
+                .sumOf(::calculatePriority)
         }
     }
 
     fun part2(input: List<String>): Int {
-        return input.chunked(3).sumOf { (r1, r2, r3) ->
-            r1.toSet()
-                .intersect(r2.toSet())
-                .intersect(r3.toSet())
-                .sumOf { calculatePriority(it) }
+        return input.chunked(3).sumOf { (rucksack1, rucksack2, rucksack3) ->
+            rucksack1.toSet()
+                .intersect(rucksack2.toSet())
+                .intersect(rucksack3.toSet())
+                .sumOf(::calculatePriority)
         }
     }
 
