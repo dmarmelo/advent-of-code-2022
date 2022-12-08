@@ -2,8 +2,8 @@ typealias Stack = Pair<Int, List<Char>>
 
 private data class Move(
     val quantity: Int,
-    val fromPosition: Int,
-    val toPosition: Int
+    val from: Int,
+    val to: Int
 )
 
 fun main() {
@@ -21,65 +21,62 @@ fun main() {
         }
     }
 
+    fun String.parseStacks(): List<Stack> = lines()
+        .map { line -> line.windowed(size = 3, step = 4) { it[1] } }
+        .transpose()
+        .map { it.filter { char -> !char.isWhitespace() } }
+        .map { it[0].digitToInt() to it.drop(1) }
+
+    fun String.parseMoves(): List<Move> =
+        Regex("""^move (\d+) from (\d+) to (\d+)$""", RegexOption.MULTILINE)
+            .findAll(this).map {
+                val (quantity, fromPosition, toPosition) = it.destructured
+                Move(quantity.toInt(), fromPosition.toInt(), toPosition.toInt())
+            }.toList()
+
     fun String.parseInput(): Pair<List<Stack>, List<Move>> {
-        val (currentStacks, rearangementProcedure) = split("\n\n", "\r\n\r\n")
+        val (stacks, procedure) = split("\n\n", "\r\n\r\n")
+        return stacks.parseStacks() to procedure.parseMoves()
+    }
 
-        val stacks = currentStacks.lines()
-            .map { line ->
-                line.windowed(size = 3, step = 4) { it[1] }
-            }
-            .transpose()
-            .map { it.filter { char -> !char.isWhitespace() } }
-            .map { it[0].digitToInt() to it.subList(1, it.size).toMutableList() }
+    fun List<Stack>.toMutable() = map { (position, items) ->
+        position to items.toMutableList()
+    }
 
-        val moveRegex = """^move (\d+) from (\d+) to (\d+)$""".toRegex(RegexOption.MULTILINE)
-        val moves = moveRegex.findAll(rearangementProcedure).map {
-            val (quantity, fromPosition, toPosition) = it.destructured
-            Move(quantity.toInt(), fromPosition.toInt(), toPosition.toInt())
-        }.toList()
-
-        return stacks to moves
+    fun List<Stack>.joinTopItems() = joinToString("") { (_, items) ->
+        items.last().toString()
     }
 
     fun part1(input: Pair<List<Stack>, List<Move>>): String {
         val (stacks, moves) = input
 
-        val mutableStacks = stacks.map { (position, items) -> position to items.toMutableList() }
+        val workingStacks = stacks.toMutable()
 
         moves.forEach {
-            val (_, fromStack) = mutableStacks[it.fromPosition - 1]
-            val (_, toStack) = mutableStacks[it.toPosition - 1]
+            val (_, fromStack) = workingStacks[it.from - 1]
+            val (_, toStack) = workingStacks[it.to - 1]
             repeat(it.quantity) {
                 toStack.add(fromStack.removeLast())
             }
         }
 
-        return mutableStacks.map { (_, items) -> items.last() }
-            .joinToString("")
+        return workingStacks.joinTopItems()
     }
 
     fun part2(input: Pair<List<Stack>, List<Move>>): String {
         val (stacks, moves) = input
 
-        val mutableStacks = stacks.map { (position, items) -> position to items.toMutableList() }
+        val workingStacks = stacks.toMutable()
 
         moves.forEach {
-            val (_, fromStack) = mutableStacks[it.fromPosition - 1]
-            val (_, toStack) = mutableStacks[it.toPosition - 1]
-            val cratesToMove = fromStack.subList(
-                fromStack.size - it.quantity,
-                fromStack.size
-            ).toList()
-            repeat(it.quantity) {
-                fromStack.removeLast()
-            }
+            val (_, fromStack) = workingStacks[it.from - 1]
+            val (_, toStack) = workingStacks[it.to - 1]
+            val cratesToMove = fromStack.takeLast(it.quantity)
+            repeat(it.quantity) { fromStack.removeLast() }
             toStack.addAll(cratesToMove)
         }
 
-        return mutableStacks
-            .filter { (_, items) -> items.isNotEmpty() }
-            .map { (_, items) -> items.last() }
-            .joinToString("")
+        return workingStacks.joinTopItems()
     }
 
     // test if implementation meets criteria from the description, like:
