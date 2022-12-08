@@ -1,15 +1,9 @@
 fun main() {
-    fun findMarker(length: Int, input: String): Int {
-        val signal = input.windowedSequence(
-            size = length,
-            step = 1
-        ).first {
-            it.groupingBy { char -> char }
-                .eachCount()
-                .all { (_, count) -> count == 1 }
-        }
-        return input.indexOf(signal) + signal.length
-    }
+    fun CharSequence.allUnique() = toHashSet().size == length
+
+    fun findMarker(width: Int, input: String) =
+        input.windowedSequence(width)
+            .indexOfFirst { it.allUnique() } + width
 
     fun part1(input: String): Int {
         return findMarker(4, input)
