@@ -1,4 +1,5 @@
-import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 private enum class Direction {
     UP, DOWN, LEFT, RIGHT
@@ -42,10 +43,10 @@ fun main() {
 
     fun Position.follow(other: Position): Position {
         val (deltaX, deltaY) = other - this
-        return if (abs(deltaX) <= 1 && abs(deltaY) <= 1) this
+        return if (deltaX.absoluteValue <= 1 && deltaY.absoluteValue <= 1) this
         else this.copy(
-            x = this.x + if (abs(deltaX) == 0) 0 else (deltaX / abs(deltaX)),
-            y = this.y + if (abs(deltaY) == 0) 0 else (deltaY / abs(deltaY))
+            x = deltaX.sign + x,
+            y = deltaY.sign + y
         )
     }
 
