@@ -3,39 +3,37 @@ fun main() {
         it.map { c -> c.digitToInt() }
     }
 
+    fun <T> List<List<T>>.getColumn(index: Int) =
+        buildList {
+            repeat(this@getColumn.size) {
+                add(this@getColumn[it][index])
+            }
+        }
+
+    fun <T> List<List<T>>.viewFrom(rowIndex: Int, columnIndex: Int): List<List<T>> {
+        val row = this[rowIndex]
+        val column = this.getColumn(columnIndex)
+        return listOf(
+            column.take(rowIndex).reversed(), // Top
+            row.drop(columnIndex + 1), // Right
+            column.drop(rowIndex + 1), // Bottom
+            row.take(columnIndex).reversed() // Left
+        )
+    }
+
     fun part1(input: List<List<Int>>): Int {
         var visibleTreeCount = 0
+        visibleTreeCount += input.size * 2 + input[0].size * 2 - 4
 
-        visibleTreeCount += input.size * 2 + (input[0].size - 2) * 2
+        for (rowIndex in 1 until input.lastIndex) {
+            val row = input[rowIndex]
+            for (columnIndex in 1 until row.lastIndex) {
+                val currentHeight = row[columnIndex]
 
-        for (row in 1 until input.lastIndex) {
-            val rowList = input[row]
-            for (column in 1 until rowList.lastIndex) {
-                val columnList = buildList {
-                    repeat(rowList.size) {
-                        add(input[it][column])
-                    }
+                val isVisible = input.viewFrom(rowIndex, columnIndex).any { direction ->
+                    direction.all { it < currentHeight }
                 }
-                val height = rowList[column]
-
-                val left = rowList.subList(0, column)
-                if (left.all { it < height }) {
-                    visibleTreeCount++
-                    continue
-                }
-                val right = rowList.subList(column + 1, rowList.size)
-                if (right.all { it < height }) {
-                    visibleTreeCount++
-                    continue
-                }
-
-                val top = columnList.subList(0, row)
-                if (top.all { it < height }) {
-                    visibleTreeCount++
-                    continue
-                }
-                val bottom = columnList.subList(row + 1, columnList.size)
-                if (bottom.all { it < height }) {
+                if (isVisible) {
                     visibleTreeCount++
                 }
             }
@@ -44,7 +42,7 @@ fun main() {
         return visibleTreeCount
     }
 
-    fun <T> Iterable<T>.takeWhileInclusive(predicate: (T) -> Boolean): List<T> {
+    fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
         val list = ArrayList<T>()
         for (item in this) {
             list.add(item)
@@ -54,25 +52,19 @@ fun main() {
         return list
     }
 
+    fun Iterable<Int>.product(): Int =
+        reduce { acc, item -> acc * item }
+
     fun part2(input: List<List<Int>>): Int {
         var scenicScore = 0
 
-        for (row in 0..input.lastIndex) {
-            val rowList = input[row]
-            for (column in 0..rowList.lastIndex) {
-                val columnList = buildList {
-                    repeat(rowList.size) {
-                        add(input[it][column])
-                    }
-                }
-                val height = rowList[column]
+        for ((rowIndex, row) in input.withIndex()) {
+            for ((columnIndex, _) in row.withIndex()) {
+                val currentHeight = row[columnIndex]
 
-                val left = rowList.subList(0, column).reversed().takeWhileInclusive { it < height }.size
-                val right = rowList.subList(column + 1, rowList.size).takeWhileInclusive { it < height }.size
-                val top = columnList.subList(0, row).reversed().takeWhileInclusive { it < height }.size
-                val bottom = columnList.subList(row + 1, columnList.size).takeWhileInclusive { it < height }.size
-
-                val score = left * right * top * bottom
+                val score = input.viewFrom(rowIndex, columnIndex).map { direction ->
+                    direction.takeUntil { it < currentHeight }.count()
+                }.product()
                 if (score > scenicScore) {
                     scenicScore = score
                 }
