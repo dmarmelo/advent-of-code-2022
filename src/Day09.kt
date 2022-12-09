@@ -31,53 +31,42 @@ fun main() {
         Motion(direction.toDirection(), steps.toInt())
     }
 
-    fun Position.movePath(motion: Motion) = buildList {
-        repeat(motion.steps) {
-            add(
-                when (motion.direction) {
-                    Direction.UP -> copy(y = y + (it + 1))
-                    Direction.DOWN -> copy(y = y - (it + 1))
-                    Direction.LEFT -> copy(x = x - (it + 1))
-                    Direction.RIGHT -> copy(x = x + (it + 1))
-                }
-            )
+    fun Position.move(direction: Direction) =
+        when (direction) {
+            Direction.UP -> copy(y = y + 1)
+            Direction.DOWN -> copy(y = y - 1)
+            Direction.LEFT -> copy(x = x - 1)
+            Direction.RIGHT -> copy(x = x + 1)
         }
-    }
+
 
     fun Position.follow(other: Position): Position {
         val (deltaX, deltaY) = other - this
-        var newTail: Position = this
-        if (abs(deltaX) == 2 && deltaY == 0) {
-            newTail = this.copy(x = this.x + (deltaX / abs(deltaX)))
-        } else if (abs(deltaY) == 2 && deltaX == 0) {
-            newTail = this.copy(y = this.y + (deltaY / abs(deltaY)))
-        } else if (abs(deltaX) == 2 || abs(deltaY) == 2) {
-            newTail = this.copy(
-                x = this.x + (deltaX / abs(deltaX)),
-                y = this.y + (deltaY / abs(deltaY))
-            )
-        }
-        return newTail
+        return if (abs(deltaX) <= 1 && abs(deltaY) <= 1) this
+        else this.copy(
+            x = this.x + if (abs(deltaX) == 0) 0 else (deltaX / abs(deltaX)),
+            y = this.y + if (abs(deltaY) == 0) 0 else (deltaY / abs(deltaY))
+        )
     }
 
-    fun Motion.moveRope(rope: List<Position>): List<List<Position>> {
-        val headPath = rope.first().movePath(this)
-        var tail = rope.drop(1)
-        return headPath.map { head ->
-            tail.fold(listOf(head)) { acc, position ->
+    fun Motion.moveRope(rope: List<Position>): List<List<Position>> = buildList {
+        var workingRope = rope
+        repeat(steps) {
+            val head = workingRope.first().move(direction)
+            val tail = workingRope.drop(1)
+            workingRope = tail.fold(listOf(head)) { acc, position ->
                 acc + position.follow(acc.last())
-            }.also {
-                tail = it.drop(1)
             }
+            add(workingRope)
         }
     }
 
     fun List<Motion>.getTailPath(rope: List<Position>): Set<Position> {
         var lastRope = rope
         return flatMap { motion ->
-            val moveRope = motion.moveRope(lastRope)
-            lastRope = moveRope.last()
-            moveRope
+            val ropePath = motion.moveRope(lastRope)
+            lastRope = ropePath.last()
+            ropePath
         }.map { it.last() }.toSet()
     }
 
