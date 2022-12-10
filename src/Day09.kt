@@ -1,5 +1,4 @@
 import kotlin.math.absoluteValue
-import kotlin.math.sign
 
 private typealias Rope = List<Position>
 
@@ -11,6 +10,9 @@ private data class Position(
     val x: Int,
     val y: Int
 ) {
+    operator fun plus(other: Position) =
+        Position(x + other.x, y + other.y)
+
     operator fun minus(other: Position) =
         Position(x - other.x, y - other.y)
 }
@@ -25,11 +27,8 @@ fun main() {
     }
 
     fun List<String>.parseInput() = flatMap {
-        val (direction, steps) = it.split(" ")
-        buildList {
-            repeat(steps.toInt()) {
-                add(direction.toDirection())
-            }
+        it.split(" ").let { (direction, steps) ->
+            List(steps.toInt()) { direction.toDirection() }
         }
     }
 
@@ -41,17 +40,17 @@ fun main() {
     }
 
     infix fun Position.follow(other: Position): Position {
-        val (deltaX, deltaY) = other - this
-        return if (deltaX.absoluteValue <= 1 && deltaY.absoluteValue <= 1) this
-        else this.copy(
-            x = x + deltaX.sign,
-            y = y + deltaY.sign
+        val (diffX, diffY) = other - this
+        return if (diffX.absoluteValue <= 1 && diffY.absoluteValue <= 1) this
+        else copy(
+            x = x + diffX.coerceIn(-1..1),
+            y = y + diffY.coerceIn(-1..1)
         )
     }
 
     infix fun Rope.move(direction: Direction): Rope {
-        val head = this.first().move(direction)
-        val tail = this.drop(1)
+        val head = first().move(direction)
+        val tail = drop(1)
         return tail.fold(listOf(head)) { rope, position ->
             rope + (position follow rope.last())
         }
