@@ -3,23 +3,12 @@ fun main() {
         it.map { c -> c.digitToInt() }
     }
 
-    fun <T> List<List<T>>.getColumn(index: Int) =
-        buildList {
-            repeat(this@getColumn.size) {
-                add(this@getColumn[it][index])
-            }
-        }
-
-    fun <T> List<List<T>>.viewFrom(rowIndex: Int, columnIndex: Int): List<List<T>> {
-        val row = this[rowIndex]
-        val column = this.getColumn(columnIndex)
-        return listOf(
-            column.take(rowIndex).reversed(), // Top
-            row.drop(columnIndex + 1), // Right
-            column.drop(rowIndex + 1), // Bottom
-            row.take(columnIndex).reversed() // Left
-        )
-    }
+    fun <T> List<List<T>>.viewFrom(rowIndex: Int, columnIndex: Int): List<List<T>> = listOf(
+        (rowIndex - 1 downTo 0).map { this@viewFrom[it][columnIndex] }, // Top
+        (columnIndex - 1 downTo 0).map { this@viewFrom[rowIndex][it] }, // Right
+        (rowIndex + 1 until this@viewFrom.size).map { this@viewFrom[it][columnIndex] }, // Bottom
+        (columnIndex + 1 until this@viewFrom[0].size).map { this@viewFrom[rowIndex][it] } // Left
+    )
 
     fun part1(input: List<List<Int>>): Int {
         var visibleTreeCount = 0
