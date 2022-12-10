@@ -1,14 +1,11 @@
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
+private typealias Rope = List<Position>
+
 private enum class Direction {
     UP, DOWN, LEFT, RIGHT
 }
-
-private data class Motion(
-    val direction: Direction,
-    val steps: Int
-)
 
 private data class Position(
     val x: Int,
@@ -27,56 +24,53 @@ fun main() {
         else -> error("Unknown direction $this")
     }
 
-    fun List<String>.parseInput() = map {
+    fun List<String>.parseInput() = flatMap {
         val (direction, steps) = it.split(" ")
-        Motion(direction.toDirection(), steps.toInt())
+        buildList {
+            repeat(steps.toInt()) {
+                add(direction.toDirection())
+            }
+        }
     }
 
-    fun Position.move(direction: Direction) =
-        when (direction) {
-            Direction.UP -> copy(y = y + 1)
-            Direction.DOWN -> copy(y = y - 1)
-            Direction.LEFT -> copy(x = x - 1)
-            Direction.RIGHT -> copy(x = x + 1)
-        }
+    fun Position.move(direction: Direction) = when (direction) {
+        Direction.UP -> copy(y = y + 1)
+        Direction.DOWN -> copy(y = y - 1)
+        Direction.LEFT -> copy(x = x - 1)
+        Direction.RIGHT -> copy(x = x + 1)
+    }
 
-
-    fun Position.follow(other: Position): Position {
+    infix fun Position.follow(other: Position): Position {
         val (deltaX, deltaY) = other - this
         return if (deltaX.absoluteValue <= 1 && deltaY.absoluteValue <= 1) this
         else this.copy(
-            x = deltaX.sign + x,
-            y = deltaY.sign + y
+            x = x + deltaX.sign,
+            y = y + deltaY.sign
         )
     }
 
-    fun Motion.moveRope(rope: List<Position>): List<List<Position>> = buildList {
-        var workingRope = rope
-        repeat(steps) {
-            val head = workingRope.first().move(direction)
-            val tail = workingRope.drop(1)
-            workingRope = tail.fold(listOf(head)) { acc, position ->
-                acc + position.follow(acc.last())
-            }
-            add(workingRope)
+    infix fun Rope.move(direction: Direction): Rope {
+        val head = this.first().move(direction)
+        val tail = this.drop(1)
+        return tail.fold(listOf(head)) { rope, position ->
+            rope + (position follow rope.last())
         }
     }
 
-    fun List<Motion>.getTailPath(rope: List<Position>): Set<Position> {
-        var lastRope = rope
-        return flatMap { motion ->
-            val ropePath = motion.moveRope(lastRope)
-            lastRope = ropePath.last()
-            ropePath
-        }.map { it.last() }.toSet()
+    fun List<Direction>.moveRope(rope: Rope) =
+        runningFold(rope) { previousPosition, direction ->
+            previousPosition move direction
+        }
+
+    fun List<Direction>.getTailPositions(rope: Rope) =
+        moveRope(rope).map { it.last() }.toSet()
+
+    fun part1(input: List<Direction>): Int {
+        return input.getTailPositions(List(2) { Position(0, 0) }).size
     }
 
-    fun part1(input: List<Motion>): Int {
-        return input.getTailPath(List(2) { Position(0, 0) }).size
-    }
-
-    fun part2(input: List<Motion>): Int {
-        return input.getTailPath(List(10) { Position(0, 0) }).size
+    fun part2(input: List<Direction>): Int {
+        return input.getTailPositions(List(10) { Position(0, 0) }).size
     }
 
     // test if implementation meets criteria from the description, like:
