@@ -3,12 +3,12 @@ fun main() {
         it.map { c -> c.digitToInt() }
     }
 
-    fun <T> List<List<T>>.viewFrom(rowIndex: Int, columnIndex: Int): List<List<T>> = listOf(
-        (rowIndex - 1 downTo 0).map { this@viewFrom[it][columnIndex] }, // Top
-        (columnIndex - 1 downTo 0).map { this@viewFrom[rowIndex][it] }, // Right
-        (rowIndex + 1 until this@viewFrom.size).map { this@viewFrom[it][columnIndex] }, // Bottom
-        (columnIndex + 1 until this@viewFrom[0].size).map { this@viewFrom[rowIndex][it] } // Left
-    )
+    fun <T> List<List<T>>.viewFrom(rowIndex: Int, columnIndex: Int): Sequence<List<T>> = sequence {
+        yield((rowIndex - 1 downTo 0).map { this@viewFrom[it][columnIndex] }) // Top
+        yield((columnIndex - 1 downTo 0).map { this@viewFrom[rowIndex][it] }) // Right
+        yield((rowIndex + 1 until this@viewFrom.size).map { this@viewFrom[it][columnIndex] }) // Bottom
+        yield((columnIndex + 1 until this@viewFrom[0].size).map { this@viewFrom[rowIndex][it] }) // Left
+    }
 
     fun part1(input: List<List<Int>>): Int {
         var visibleTreeCount = 0
@@ -41,7 +41,7 @@ fun main() {
         return list
     }
 
-    fun Iterable<Int>.product(): Int =
+    fun Sequence<Int>.product(): Int =
         reduce { acc, item -> acc * item }
 
     fun part2(input: List<List<Int>>): Int {
