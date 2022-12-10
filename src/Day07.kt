@@ -27,9 +27,7 @@ private fun Directory.findAllSubDirectorires(): List<Directory> =
         }
 
 private fun Directory.findSubDirectory(path: String): Directory? {
-    val subPaths = path.split("/")
-        .dropWhile { it == "" }
-        .dropLastWhile { it == "" }
+    val subPaths = path.split("/").filter { it.isNotBlank() }
 
     var currentDirectory = this
     for (subPath in subPaths) {
