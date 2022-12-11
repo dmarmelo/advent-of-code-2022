@@ -1,6 +1,6 @@
 private typealias Operation = (old: Long) -> Long
 
-private data class Test(
+private data class MonkeyTest(
     val value: Long,
     val ifTrue: Int,
     val ifFalse: Int
@@ -13,7 +13,7 @@ private data class Monkey(
     val id: Int,
     val items: List<Long>,
     val operation: Operation,
-    val test: Test
+    val test: MonkeyTest
 )
 
 private fun createOperation(expression: String): Operation {
@@ -38,7 +38,7 @@ private fun List<String>.toMonkey(): Monkey {
         number,
         items,
         operation,
-        Test(test, ifTestTrue, ifTestFalse)
+        MonkeyTest(test, ifTestTrue, ifTestFalse)
     )
 }
 
@@ -67,11 +67,11 @@ fun main() {
         repeat(rounds) {
             repeat(monkeys.size) { monkeyNumber ->
                 val monkey = monkeys[monkeyNumber]
-                monkey.items.forEach { worry ->
-                    val newWorry = processWorry(monkey.operation(worry))
-                    val throwTo = monkey.test(newWorry)
-                    val newMonkey = monkeys[throwTo]
-                    monkeys[throwTo] = newMonkey.copy(items = newMonkey.items + newWorry)
+                monkey.items.forEach { item ->
+                    val newItem = processWorry(monkey.operation(item))
+                    val throwToMonkey = monkey.test(newItem)
+                    val catcherMonkey = monkeys[throwToMonkey]
+                    monkeys[throwToMonkey] = catcherMonkey.copy(items = catcherMonkey.items + newItem)
                     monkeyOperations[monkey.id] = monkeyOperations[monkey.id] + 1
                 }
                 monkeys[monkey.id] = monkey.copy(items = emptyList())
