@@ -41,9 +41,6 @@ fun main() {
         return list
     }
 
-    fun Sequence<Int>.product(): Int =
-        reduce { acc, item -> acc * item }
-
     fun part2(input: List<List<Int>>): Int {
         var scenicScore = 0
 

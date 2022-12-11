@@ -20,3 +20,12 @@ fun readInput(name: String) = inputFile(name).readLines()
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
     .toString(16)
     .padStart(32, '0')
+
+fun Sequence<Int>.product(): Int =
+        reduce { acc, item -> acc * item }
+
+fun Iterable<Int>.product(): Int =
+        reduce { acc, item -> acc * item }
+
+fun Iterable<Long>.product(): Long =
+        reduce { acc, item -> acc * item }
