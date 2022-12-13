@@ -1,20 +1,9 @@
 import kotlin.math.absoluteValue
 
-private typealias Rope = List<Position>
+private typealias Rope = List<Point2D>
 
 private enum class Direction {
     UP, DOWN, LEFT, RIGHT
-}
-
-private data class Position(
-    val x: Int,
-    val y: Int
-) {
-    operator fun plus(other: Position) =
-        Position(x + other.x, y + other.y)
-
-    operator fun minus(other: Position) =
-        Position(x - other.x, y - other.y)
 }
 
 fun main() {
@@ -32,14 +21,14 @@ fun main() {
         }
     }
 
-    fun Position.move(direction: Direction) = when (direction) {
+    fun Point2D.move(direction: Direction) = when (direction) {
         Direction.UP -> copy(y = y + 1)
         Direction.DOWN -> copy(y = y - 1)
         Direction.LEFT -> copy(x = x - 1)
         Direction.RIGHT -> copy(x = x + 1)
     }
 
-    infix fun Position.follow(other: Position): Position {
+    infix fun Point2D.follow(other: Point2D): Point2D {
         val (diffX, diffY) = other - this
         return if (diffX.absoluteValue <= 1 && diffY.absoluteValue <= 1) this
         else copy(
@@ -65,11 +54,11 @@ fun main() {
         moveRope(rope).map { it.last() }.toSet()
 
     fun part1(input: List<Direction>): Int {
-        return input.getTailPositions(List(2) { Position(0, 0) }).size
+        return input.getTailPositions(List(2) { Point2D(0, 0) }).size
     }
 
     fun part2(input: List<Direction>): Int {
-        return input.getTailPositions(List(10) { Position(0, 0) }).size
+        return input.getTailPositions(List(10) { Point2D(0, 0) }).size
     }
 
     // test if implementation meets criteria from the description, like:

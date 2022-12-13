@@ -29,3 +29,24 @@ fun Iterable<Int>.product(): Int =
 
 fun Iterable<Long>.product(): Long =
         reduce { acc, item -> acc * item }
+
+/**
+ * 2 dimensional point representation
+ */
+data class Point2D(
+    val x: Int,
+    val y: Int
+) {
+    val cardinalNeighbors: Set<Point2D> get() = setOf(
+        copy(x = x - 1),
+        copy(x = x + 1),
+        copy(y = y - 1),
+        copy(y = y + 1)
+    )
+
+    operator fun plus(other: Point2D) =
+        Point2D(x + other.x, y + other.y)
+
+    operator fun minus(other: Point2D) =
+        Point2D(x - other.x, y - other.y)
+}
