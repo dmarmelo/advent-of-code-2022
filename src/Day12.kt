@@ -1,5 +1,3 @@
-import java.util.*
-
 private data class HeightMap(
     val elevations: Map<Point2D, Int>,
     val start: Point2D,
@@ -7,14 +5,6 @@ private data class HeightMap(
 ) {
     fun getNeighbors(point: Point2D) =
         point.cardinalNeighbors.filter { n -> n in elevations }
-}
-
-data class CostItem<T>(
-    val item: T,
-    val cost: Int
-) : Comparable<CostItem<T>> {
-    override fun compareTo(other: CostItem<T>) =
-        cost.compareTo(other.cost)
 }
 
 fun main() {
@@ -41,18 +31,19 @@ fun main() {
         canMove: (from: T, to: T) -> Boolean = { _, _ -> true }
     ): Int {
         val seen = mutableSetOf<T>()
-        val queue = PriorityQueue<CostItem<T>>().apply { add(CostItem(start, 0)) }
-
+        val queue = ArrayDeque<Pair<T, Int>>().apply { add(start to 0) }
         while (queue.isNotEmpty()) {
-            val next = queue.poll()
-            if (next.item !in seen) {
-                seen += next.item
-                val neighbors = getNeighbors(next.item).filter { canMove(next.item, it) }
-                if (neighbors.any(isGoal)) {
-                    return next.cost + 1
-                }
-                queue.addAll(neighbors.map { CostItem(it, next.cost + 1) })
+            val (item, cost) = queue.removeFirst()
+            if (isGoal(item)) {
+                return cost
             }
+            getNeighbors(item)
+                .filter { canMove(item, it) }
+                .filter { it !in seen }
+                .forEach {
+                    seen += it
+                    queue.add(it to cost + 1)
+                }
         }
         return -1
     }
